@@ -1,0 +1,16 @@
+logger:
+  level: "info"
+http_server:
+  listen: ":8080"
+  read_Timeout: "2s"
+  write_timeout: "3s"
+  read_header_timeout: "1s"
+  idle_timeout: "3m"
+database:
+  driver: "postgres"
+  host: "0.0.0.0"
+  port: 5432
+  db: "cryptos-backend"
+  user: "ali"
+  password: "a1234567"
+  time_zone: "Asia/Tehran"
