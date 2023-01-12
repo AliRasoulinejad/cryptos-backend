@@ -14,3 +14,5 @@ database:
   user: "ali"
   password: "a1234567"
   time_zone: "Asia/Tehran"
+pagination:
+  maximum_blog_per_page: 100

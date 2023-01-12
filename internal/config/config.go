@@ -14,6 +14,7 @@ type Config struct {
 	Logger     Logger      `mapstructure:"logger"`
 	HTTPServer HTTPServer  `mapstructure:"http_server"`
 	Database   SQLDatabase `mapstructure:"database"`
+	Pagination Pagination  `mapstructure:"pagination"`
 }
 
 type Logger struct {
@@ -77,6 +78,10 @@ func (d SQLDatabase) String() (str string) {
 	}
 
 	return
+}
+
+type Pagination struct {
+	MaximumBlogPerPage int `mapstructure:"maximum_blog_per_page"`
 }
 
 func Init(filename string) {
