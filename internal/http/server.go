@@ -34,6 +34,10 @@ func NewServer() *server {
 
 func (s *server) Serve(app *app.Application) *server {
 	s.e.Pre(echomw.RemoveTrailingSlash())
+	s.e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	// Registering routes
 	s.e.GET("/", handlers.Index)
