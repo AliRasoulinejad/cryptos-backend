@@ -11,6 +11,7 @@ import (
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/http/handlers"
+	v1 "github.com/AliRasoulinejad/cryptos-backend/internal/http/handlers/v1"
 )
 
 type server struct {
@@ -37,6 +38,12 @@ func (s *server) Serve(app *app.Application) *server {
 	// Registering routes
 	s.e.GET("/", handlers.Index)
 	s.e.GET("/health", handlers.Health)
+
+	categoryHandler := v1.NewCategoryHandler(app.Repositories)
+	categoryRoutes := s.e.Group("/api/v1/categories")
+	{
+		categoryRoutes.GET("/top", categoryHandler.Top())
+	}
 
 	// Starting the server
 	go func() {

@@ -9,9 +9,9 @@ import (
 )
 
 type Category interface {
-	SelectAll() (categories *[...]models.Category)
-	SelectTopN(n int) (categories *[...]models.Category)
-	GetBySlug(slug string) (category models.Category)
+	SelectAll() (*[]models.Category, error)
+	SelectTopN(n int) (*[]models.Category, error)
+	GetBySlug(slug string) (models.Category, error)
 }
 
 type category struct {
@@ -22,23 +22,36 @@ func NewCategoryRepo(db *gorm.DB) Category {
 	return &category{db: db}
 }
 
-func (c *category) SelectAll() (categories *[...]models.Category) {
-	c.db.Find(categories)
+func (c *category) SelectAll() (*[]models.Category, error) {
+	var categories *[]models.Category
+	result := c.db.Find(categories)
 
-	return
+	return categories, result.Error
 }
 
-func (c *category) SelectTopN(n int) (categories *[...]models.Category) {
+func (c *category) SelectTopN(n int) (*[]models.Category, error) {
+	var sCategories []models.Category
 	query := fmt.Sprintf(
-		"SELECT * FROM `categories` WHERE id IN (SELECT category_id FROM `blogs` GROUP BY category_id ORDER BY COUNT("+
-			"category_id) DESC;) LIMIT %v;", n)
-	c.db.Raw(query).Scan(categories)
+		"SELECT id, title, slug, image, orders, description FROM category WHERE id IN ("+
+			"SELECT category_id FROM blog GROUP BY category_id ORDER BY COUNT("+
+			"category_id) DESC LIMIT %v)", n)
+	result := c.db.Raw(query).Scan(&sCategories)
+	if result.Error != nil {
+		return nil, result.Error
+	}
 
-	return
+	var categories []models.Category
+	for _, sCategory := range sCategories {
+		newCategory := models.NewCategory(sCategory.Title, sCategory.Slug, sCategory.Image, sCategory.Description).WithID(sCategory.ID)
+		categories = append(categories, *newCategory)
+	}
+
+	return &categories, nil
 }
 
-func (c *category) GetBySlug(slug string) (category models.Category) {
-	c.db.First(category, "slug = ?", slug)
+func (c *category) GetBySlug(slug string) (models.Category, error) {
+	var category models.Category
+	result := c.db.First(category, "slug = ?", slug)
 
-	return
+	return category, result.Error
 }

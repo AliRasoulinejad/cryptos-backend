@@ -14,8 +14,8 @@ var (
 )
 
 type Blog interface {
-	SelectAllByPagination(blogPerPage int, pageNumber int) (blogs *[...]models.Blog, err error)
-	SelectByCategoryID(categoryID int64) (blogs *[...]models.Blog, err error)
+	SelectAllByPagination(blogPerPage int, pageNumber int) (blogs *[]models.Blog, err error)
+	SelectByCategoryID(categoryID int64) (blogs *[]models.Blog, err error)
 	GetBySlug(slug string) (blog models.Blog, err error)
 }
 
@@ -27,7 +27,7 @@ func NewBlogRepo(db *gorm.DB) Blog {
 	return &blog{db: db}
 }
 
-func (c *blog) SelectAllByPagination(blogPerPage int, pageNumber int) (blogs *[...]models.Blog, err error) {
+func (c *blog) SelectAllByPagination(blogPerPage int, pageNumber int) (blogs *[]models.Blog, err error) {
 	max := config.C.Pagination.MaximumBlogPerPage
 	if blogPerPage > max {
 		return nil, ErrMaximumPageSize
@@ -39,7 +39,7 @@ func (c *blog) SelectAllByPagination(blogPerPage int, pageNumber int) (blogs *[.
 	return
 }
 
-func (c *blog) SelectByCategoryID(categoryID int64) (blogs *[...]models.Blog, err error) {
+func (c *blog) SelectByCategoryID(categoryID int64) (blogs *[]models.Blog, err error) {
 	result := c.db.First(blogs, "category_id = ?", categoryID).Where("publish = true")
 	err = result.Error
 	return

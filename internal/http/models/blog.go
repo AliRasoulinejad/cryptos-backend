@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type Blog interface {
+type BlogInterface interface {
 }
 
-type blog struct {
+type Blog struct {
 	ID        uint `gorm:"primaryKey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -28,6 +28,6 @@ type blog struct {
 	DisLikesCount  uint64  `gorm:"default:0"`
 }
 
-func NewBlog(title, slug, image, description string) Category {
-	return category{Title: title, Slug: slug, Image: image, Description: description}
-}
+// func NewBlog(title, slug, image string) CategoryInterfaceBlog {
+// 	return blog{Title: title, Slug: slug, Image: image}
+// }
