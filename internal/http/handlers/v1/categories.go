@@ -47,11 +47,11 @@ func (c category) Top() func(ctx echo.Context) error {
 			return fmt.Errorf("error in get top categories")
 		}
 
-		var categoryResponses []categoryResponse
-		for _, cat := range *categories {
-			newCategory := categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
-			categoryResponses = append(categoryResponses, newCategory)
+		categoryResponses := make([]categoryResponse, cnt)
+		for i, cat := range *categories {
+			categoryResponses[i] = categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
 		}
+
 		return ctx.JSON(http.StatusOK, categoryResponses)
 	}
 }

@@ -30,20 +30,13 @@ func (c *category) SelectAll() (*[]models.Category, error) {
 }
 
 func (c *category) SelectTopN(n int) (*[]models.Category, error) {
-	var sCategories []models.Category
-	query := fmt.Sprintf(
-		"SELECT id, title, slug, image, orders, description FROM category WHERE id IN ("+
-			"SELECT category_id FROM blog GROUP BY category_id ORDER BY COUNT("+
-			"category_id) DESC LIMIT %v)", n)
-	result := c.db.Raw(query).Scan(&sCategories)
+	query := fmt.Sprintf("SELECT id, title, slug, image, orders, description FROM category WHERE id IN ("+
+		"SELECT category_id FROM blog GROUP BY category_id ORDER BY COUNT("+
+		"category_id) DESC LIMIT %v)", n)
+	var categories []models.Category
+	result := c.db.Raw(query).Scan(&categories)
 	if result.Error != nil {
 		return nil, result.Error
-	}
-
-	var categories []models.Category
-	for _, sCategory := range sCategories {
-		newCategory := models.NewCategory(sCategory.Title, sCategory.Slug, sCategory.Image, sCategory.Description).WithID(sCategory.ID)
-		categories = append(categories, *newCategory)
 	}
 
 	return &categories, nil
