@@ -20,6 +20,8 @@ type categoryResponse struct {
 }
 
 type Category interface {
+	All() func(ctx echo.Context) error
+	Get() func(ctx echo.Context) error
 	Top() func(ctx echo.Context) error
 }
 
@@ -29,6 +31,40 @@ type category struct {
 
 func NewCategoryHandler(repositories *app.Repositories) Category {
 	return category{repositories: repositories}
+}
+
+func (c category) All() func(ctx echo.Context) error {
+	return func(ctx echo.Context) error {
+		categories, err := c.repositories.CategoryRepo.SelectAll()
+		if err != nil {
+			log.WithError(err).Errorf("error in get all categories")
+
+			return fmt.Errorf("error in get all categories")
+		}
+
+		categoryResponses := make([]categoryResponse, len(*categories))
+		for i, cat := range *categories {
+			categoryResponses[i] = categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
+		}
+
+		return ctx.JSON(http.StatusOK, categoryResponses)
+	}
+}
+
+func (c category) Get() func(ctx echo.Context) error {
+	return func(ctx echo.Context) error {
+		slug := ctx.Param("slug")
+		cat, err := c.repositories.CategoryRepo.GetBySlug(slug)
+		if err != nil {
+			log.WithError(err).Errorf("error in get category by slug")
+
+			return fmt.Errorf("error in get category by slug")
+		}
+
+		response := categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
+
+		return ctx.JSON(http.StatusOK, response)
+	}
 }
 
 func (c category) Top() func(ctx echo.Context) error {
