@@ -7,7 +7,7 @@ import (
 )
 
 type Comment interface {
-	SelectByBlogID(blogID uint) (*[]models.Comment, error)
+	SelectByBlogID(blogID int64) (*[]models.Comment, error)
 }
 
 type comment struct {
@@ -18,9 +18,12 @@ func NewCommentRepo(db *gorm.DB) Comment {
 	return &comment{db: db}
 }
 
-func (c *comment) SelectByBlogID(blogID uint) (*[]models.Comment, error) {
-	var comments *[]models.Comment
-	result := c.db.Find(comments).Where("blog_id = ?", blogID)
+func (c *comment) SelectByBlogID(blogID int64) (*[]models.Comment, error) {
+	var comments []models.Comment
+	result := c.db.Where("blog_id = ?", blogID).Find(&comments)
+	if result.Error != nil {
+		return nil, result.Error
+	}
 
-	return comments, result.Error
+	return &comments, nil
 }

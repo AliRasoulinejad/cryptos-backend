@@ -81,8 +81,9 @@ func (d SQLDatabase) String() (str string) {
 }
 
 type Basic struct {
-	CORSWhiteList []string   `mapstructure:"cors_white_list"`
-	Pagination    Pagination `mapstructure:"pagination"`
+	CORSWhiteList            []string   `mapstructure:"cors_white_list"`
+	PopularPostsFromLastDays int        `mapstructure:"popular_posts_from_last_days"`
+	Pagination               Pagination `mapstructure:"pagination"`
 }
 
 type Pagination struct {

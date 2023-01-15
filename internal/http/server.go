@@ -51,6 +51,18 @@ func (s *server) Serve(app *app.Application) *server {
 		categoryRoutes.GET("/top", categoryHandler.Top())
 	}
 
+	blogHandler := v1.NewBlogHandler(app.Repositories)
+	blogRoutes := s.e.Group("/api/v1/blogs")
+	{
+		blogRoutes.GET("", blogHandler.All()) // page , categorySlug
+		blogRoutes.GET("/:slug", blogHandler.Get())
+		blogRoutes.GET("/:slug/comments", blogHandler.GetComments())
+		// blogRoutes.GET("/:slug/recommendations", blogHandler.GetRecommendations())
+		blogRoutes.GET("/:slug/recommendations", blogHandler.Popular())
+		blogRoutes.GET("/popular", blogHandler.Popular())
+		blogRoutes.GET("/recent", blogHandler.Recent())
+	}
+
 	// Starting the server
 	go func() {
 		if err := s.e.Start(config.C.HTTPServer.Listen); err != nil && err != http.ErrServerClosed {

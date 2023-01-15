@@ -2,7 +2,7 @@ logger:
   level: "info"
 http_server:
   listen: ":8080"
-  read_Timeout: "2s"
+  read_timeout: "2s"
   write_timeout: "3s"
   read_header_timeout: "1s"
   idle_timeout: "3m"
@@ -15,5 +15,8 @@ database:
   password: "a1234567"
   time_zone: "Asia/Tehran"
 basic:
+  cors_white_list:
+    - 0.0.0.0
+  popular_posts_from_last_days: 2
   pagination:
     maximum_blog_per_page: 100

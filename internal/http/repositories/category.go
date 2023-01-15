@@ -11,6 +11,7 @@ import (
 type Category interface {
 	SelectAll() (*[]models.Category, error)
 	SelectTopN(n int) (*[]models.Category, error)
+	GetIDBySlug(slug string) (int64, error)
 	GetBySlug(slug string) (*models.Category, error)
 }
 
@@ -40,6 +41,13 @@ func (c *category) SelectTopN(n int) (*[]models.Category, error) {
 	}
 
 	return &categories, nil
+}
+
+func (c *category) GetIDBySlug(slug string) (int64, error) {
+	var ID int64
+	result := c.db.Raw("SELECT id FROM categories WHERE slug = ?", slug).Scan(&ID)
+
+	return ID, result.Error
 }
 
 func (c *category) GetBySlug(slug string) (*models.Category, error) {

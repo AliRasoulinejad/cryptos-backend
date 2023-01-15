@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -12,8 +11,7 @@ type Blog struct {
 	ID        uint `gorm:"primaryKey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt sql.NullTime
-
+	// DeletedAt sql.NullTime
 	Title          string  `gorm:"size:150"`
 	Slug           string  `gorm:"size:150; unique"`
 	AuthorID       int64   `gorm:"column:author_id; unique; foreignKey"`
@@ -29,5 +27,5 @@ type Blog struct {
 }
 
 // func NewBlog(title, slug, image string) CategoryInterfaceBlog {
-// 	return blog{Title: title, Slug: slug, Image: image}
+// 	return Blog{Title: title, Slug: slug, Image: image}
 // }
