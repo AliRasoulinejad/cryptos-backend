@@ -11,7 +11,7 @@ import (
 type Category interface {
 	SelectAll() (*[]models.Category, error)
 	SelectTopN(n int) (*[]models.Category, error)
-	GetBySlug(slug string) (models.Category, error)
+	GetBySlug(slug string) (*models.Category, error)
 }
 
 type category struct {
@@ -23,15 +23,15 @@ func NewCategoryRepo(db *gorm.DB) Category {
 }
 
 func (c *category) SelectAll() (*[]models.Category, error) {
-	var categories *[]models.Category
-	result := c.db.Find(categories)
+	var categories []models.Category
+	result := c.db.Find(&categories)
 
-	return categories, result.Error
+	return &categories, result.Error
 }
 
 func (c *category) SelectTopN(n int) (*[]models.Category, error) {
-	query := fmt.Sprintf("SELECT id, title, slug, image, orders, description FROM category WHERE id IN ("+
-		"SELECT category_id FROM blog GROUP BY category_id ORDER BY COUNT("+
+	query := fmt.Sprintf("SELECT id, title, slug, image, orders, description FROM categories WHERE id IN ("+
+		"SELECT category_id FROM blogs GROUP BY category_id ORDER BY COUNT("+
 		"category_id) DESC LIMIT %v)", n)
 	var categories []models.Category
 	result := c.db.Raw(query).Scan(&categories)
@@ -42,9 +42,9 @@ func (c *category) SelectTopN(n int) (*[]models.Category, error) {
 	return &categories, nil
 }
 
-func (c *category) GetBySlug(slug string) (models.Category, error) {
+func (c *category) GetBySlug(slug string) (*models.Category, error) {
 	var category models.Category
-	result := c.db.First(category, "slug = ?", slug)
+	result := c.db.First(&category, "slug = ?", slug)
 
-	return category, result.Error
+	return &category, result.Error
 }

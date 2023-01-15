@@ -46,7 +46,7 @@ func (s *server) Serve(app *app.Application) *server {
 	categoryHandler := v1.NewCategoryHandler(app.Repositories)
 	categoryRoutes := s.e.Group("/api/v1/categories")
 	{
-		categoryRoutes.GET("/", categoryHandler.All())
+		categoryRoutes.GET("", categoryHandler.All())
 		categoryRoutes.GET("/:slug", categoryHandler.Get())
 		categoryRoutes.GET("/top", categoryHandler.Top())
 	}

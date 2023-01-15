@@ -9,7 +9,6 @@ type Category struct {
 	Title       string `gorm:"size:150"`
 	Slug        string `gorm:"size:150;unique"`
 	Image       string `gorm:"default:assets/img/category.jpg"`
-	Order       int    `gorm:"default:0"`
 	Description string
 }
 
