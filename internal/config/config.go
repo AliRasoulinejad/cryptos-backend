@@ -14,7 +14,7 @@ type Config struct {
 	Logger     Logger      `mapstructure:"logger"`
 	HTTPServer HTTPServer  `mapstructure:"http_server"`
 	Database   SQLDatabase `mapstructure:"database"`
-	Pagination Pagination  `mapstructure:"pagination"`
+	Basic      Basic       `mapstructure:"basic"`
 }
 
 type Logger struct {
@@ -78,6 +78,11 @@ func (d SQLDatabase) String() (str string) {
 	}
 
 	return
+}
+
+type Basic struct {
+	CORSWhiteList []string   `mapstructure:"cors_white_list"`
+	Pagination    Pagination `mapstructure:"pagination"`
 }
 
 type Pagination struct {

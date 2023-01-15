@@ -35,7 +35,7 @@ func NewServer() *server {
 func (s *server) Serve(app *app.Application) *server {
 	s.e.Pre(echomw.RemoveTrailingSlash())
 	s.e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},
+		AllowOrigins: config.C.Basic.CORSWhiteList,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
