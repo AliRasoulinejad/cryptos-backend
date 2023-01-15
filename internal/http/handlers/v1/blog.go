@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
-	"github.com/AliRasoulinejad/cryptos-backend/internal/http/models"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/models"
 )
 
 type blogResponse struct {

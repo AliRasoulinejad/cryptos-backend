@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
-	"github.com/AliRasoulinejad/cryptos-backend/internal/http/models"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/models"
 )
 
 var (
