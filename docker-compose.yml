@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-    image: gringotts:${GIT_BRANCH}
+    image: cryptos:${GIT_BRANCH}
     ports:
       - "8080:8080"
     volumes:
@@ -42,6 +42,4 @@ services:
 #      - JAEGER_AGENT_HOST=jaeger
 
 volumes:
-  base_api_data:
-  backoffice_data:
-  minio-data:
+  postgres_data:
