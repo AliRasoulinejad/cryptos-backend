@@ -21,7 +21,7 @@ RUN apk add git make
 RUN go mod download
 
 COPY . /src
-RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags "-w -s \
+RUN CGO_ENABLED=0 go build -o cryptos -a -installsuffix cgo -ldflags "-w -s \
     -X ${BUILD_INFO_PKG}.VCSRef=${GIT_SHA} \
     -X ${BUILD_INFO_PKG}.Version=${GIT_BRANCH}:${GIT_TAG} \
     -X ${BUILD_INFO_PKG}.Date=${BUILD_TIMESTAMP}"
