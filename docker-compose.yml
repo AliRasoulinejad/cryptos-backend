@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+    image: gringotts:${GIT_BRANCH}
+    ports:
+      - "8080:8080"
+    volumes:
+      - .compose/config.yml:/app/config.yml
+    depends_on:
+      db:
+        condition: service_healthy
+#      jaeger:
+#        condition: service_started
+    restart: on-failure
+    command: bash -c "./cryptos cryptos -config config.yml"
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "cryptos"
+      POSTGRES_USER: "cryptos"
+      POSTGRES_PASSWORD: "CrypT0$$"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "cryptos", "-d", "cryptos" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+#  jaeger:
+#    image: jaegertracing/all-in-one:latest
+#    ports:
+#      - 14250:14250
+#      - "6831:6831/udp"
+#      - 16686:16686
+#    environment:
+#      - JAEGER_AGENT_HOST=jaeger
+
+volumes:
+  base_api_data:
+  backoffice_data:
+  minio-data:
