@@ -84,9 +84,9 @@ func (b *blog) SelectLastN(n int) (*[]models.Blog, error) {
 	var blogs []models.Blog
 	today := time.Now().Day()
 	past2days := today - 2
-	result := b.db.Find(&blogs).
+	result := b.db.Limit(n).
 		Where("publish=true AND category_id != 1 AND created_at BETWEEN (?, ?) ORDER BY reading_time DESC", past2days, today).
-		Limit(n)
+		Find(&blogs)
 	if result.Error != nil {
 		return nil, result.Error
 	}
