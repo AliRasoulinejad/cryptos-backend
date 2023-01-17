@@ -82,10 +82,10 @@ func (b *blog) SelectTopN(n int) (*[]models.Blog, error) {
 
 func (b *blog) SelectLastN(n int) (*[]models.Blog, error) {
 	var blogs []models.Blog
-	today := time.Now().Day()
-	past2days := today - 2
+	lastDays := config.C.Basic.PopularPostsFromLastDays
+	past2days := time.Now().AddDate(0, 0, -1*lastDays)
 	result := b.db.Limit(n).
-		Where("publish=true AND category_id != 1 AND created_at BETWEEN (?, ?) ORDER BY reading_time DESC", past2days, today).
+		Where("publish=true AND category_id != 1 AND created_at > ? ORDER BY reading_time DESC", past2days).
 		Find(&blogs)
 	if result.Error != nil {
 		return nil, result.Error
