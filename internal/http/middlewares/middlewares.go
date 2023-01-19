@@ -16,7 +16,7 @@ func EchoMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		status := c.Response().Status
 		logStr := log.Logger.WithContext(c.Request().Context()).
 			WithField("url", c.Request().URL.Path).
-			// WithField("status", status).
+			WithField("status", status).
 			WithField("time(ms)", endTime)
 		switch {
 		case status < 300:
