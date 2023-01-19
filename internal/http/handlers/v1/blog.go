@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/models"
 )
 
@@ -67,7 +67,7 @@ func (b blog) All() func(ctx echo.Context) error {
 		} else {
 			categoryID, err = b.repositories.CategoryRepo.GetIDBySlug(categorySlug)
 			if err != nil {
-				log.WithError(err).Errorf("error in get categoryID")
+				log.Logger.WithError(err).Errorf("error in get categoryID")
 
 				return fmt.Errorf("error in get categoryID")
 			}
@@ -79,7 +79,7 @@ func (b blog) All() func(ctx echo.Context) error {
 
 		blogs, err := b.repositories.BlogRepo.SelectAllByPaginationByCategorySlug(10, page, categoryID)
 		if err != nil {
-			log.WithError(err).Errorf("error in get all blogs")
+			log.Logger.WithError(err).Errorf("error in get all blogs")
 
 			return fmt.Errorf("error in get all blogs")
 		}
@@ -95,7 +95,7 @@ func (b blog) Get() func(ctx echo.Context) error {
 		slug := ctx.Param("slug")
 		blg, err := b.repositories.BlogRepo.GetBySlug(slug)
 		if err != nil {
-			log.WithError(err).Errorf("error in get blog by slug")
+			log.Logger.WithError(err).Errorf("error in get blog by slug")
 
 			return fmt.Errorf("error in get blog by slug")
 		}
@@ -114,14 +114,14 @@ func (b blog) GetComments() func(ctx echo.Context) error {
 		slug := ctx.Param("slug")
 		blogID, err := b.repositories.BlogRepo.GetIDBySlug(slug)
 		if err != nil {
-			log.WithError(err).Errorf("error in get top blogs")
+			log.Logger.WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
 
 		comments, err := b.repositories.CommentRepo.SelectByBlogID(blogID)
 		if err != nil {
-			log.WithError(err).Errorf("error in fetch blog comments")
+			log.Logger.WithError(err).Errorf("error in fetch blog comments")
 
 			return fmt.Errorf("error in fetch blog comments")
 		}
@@ -147,14 +147,14 @@ func (b blog) Popular() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.WithError(err).Error("count number is not integer")
+			log.Logger.WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
 		blogs, err := b.repositories.BlogRepo.SelectTopN(cnt)
 		if err != nil {
-			log.WithError(err).Errorf("error in get top blogs")
+			log.Logger.WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
@@ -169,14 +169,14 @@ func (b blog) Recent() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.WithError(err).Error("count number is not integer")
+			log.Logger.WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
 		blogs, err := b.repositories.BlogRepo.SelectLastN(cnt)
 		if err != nil {
-			log.WithError(err).Errorf("error in get %v recent blogs", cnt)
+			log.Logger.WithError(err).Errorf("error in get %v recent blogs", cnt)
 
 			return fmt.Errorf("error in get %v recent blogs", cnt)
 		}

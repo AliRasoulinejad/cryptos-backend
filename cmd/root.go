@@ -3,11 +3,11 @@ package cmd
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 )
 
 var (
@@ -35,12 +35,13 @@ func initialize() {
 
 func preRun(_ *cobra.Command, _ []string) {
 	config.Init(configPath)
+	log.InitLogger()
 }
 
 // Execute executes the root command.
 func Execute() {
 	err := rootCMD.Execute()
 	if err != nil {
-		log.Error(err)
+		log.Logger.Error(err)
 	}
 }

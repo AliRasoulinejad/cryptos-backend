@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 )
 
 type categoryResponse struct {
@@ -37,7 +37,8 @@ func (c category) All() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
 		categories, err := c.repositories.CategoryRepo.SelectAll()
 		if err != nil {
-			log.WithError(err).Errorf("error in get all categories")
+
+			log.Logger.WithError(err).Errorf("error in get all categories")
 
 			return fmt.Errorf("error in get all categories")
 		}
@@ -56,7 +57,7 @@ func (c category) Get() func(ctx echo.Context) error {
 		slug := ctx.Param("slug")
 		cat, err := c.repositories.CategoryRepo.GetBySlug(slug)
 		if err != nil {
-			log.WithError(err).Errorf("error in get category by slug")
+			log.Logger.WithError(err).Errorf("error in get category by slug")
 
 			return fmt.Errorf("error in get category by slug")
 		}
@@ -71,14 +72,14 @@ func (c category) Top() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.WithError(err).Error("count number is not integer")
+			log.Logger.WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
 		categories, err := c.repositories.CategoryRepo.SelectTopN(cnt)
 		if err != nil {
-			log.WithError(err).Errorf("error in get top categories")
+			log.Logger.WithError(err).Errorf("error in get top categories")
 
 			return fmt.Errorf("error in get top categories")
 		}
