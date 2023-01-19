@@ -17,13 +17,14 @@ func InitLogger() {
 	}
 
 	Logger = &logrus.Logger{
-		Out:          os.Stderr,
-		Level:        level,
-		ReportCaller: true,
+		Out:   os.Stderr,
+		Level: level,
+		// ReportCaller: true,
 		Formatter: &logrus.TextFormatter{
-			ForceColors:     true,
-			DisableColors:   false,
-			TimestampFormat: "2006-01-02 15:04:05",
+			ForceColors:            true,
+			DisableColors:          false,
+			DisableLevelTruncation: true,
+			TimestampFormat:        "2006-01-02 15:04:05",
 			// LogFormat:       "[%time%] %lvl%, %msg%",
 		},
 	}

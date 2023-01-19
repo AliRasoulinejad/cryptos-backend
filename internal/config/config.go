@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 )
 
 var C *Config
@@ -63,7 +62,7 @@ func (d SQLDatabase) DSN() (dsn string) {
 	case "postgres":
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s", d.Host, d.User, d.Password, d.DB, d.Port, d.TimeZone)
 	default:
-		log.Logger.Fatalf("SQLDatabase driver is not supported: %s", d.Driver)
+		log.Fatalf("SQLDatabase driver is not supported: %s", d.Driver)
 	}
 
 	return
@@ -75,7 +74,7 @@ func (d SQLDatabase) String() (str string) {
 	case "postgres":
 		str = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s", d.Host, d.User, d.Password, d.DB, d.Port, d.TimeZone)
 	default:
-		log.Logger.Fatalf("SQLDatabase driver is not supported: %s", d.Driver)
+		log.Fatalf("SQLDatabase driver is not supported: %s", d.Driver)
 	}
 
 	return
@@ -101,14 +100,14 @@ func Init(filename string) {
 
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Logger.WithError(err).Fatalf("failed on config `%s` unmarshal", filename)
+		log.WithError(err).Fatalf("failed on config `%s` unmarshal", filename)
 	}
 
 	err = v.Unmarshal(c)
 	if err != nil {
-		log.Logger.WithError(err).Fatalf("load configurations failed")
+		log.WithError(err).Fatalf("load configurations failed")
 	}
 
 	C = c
-	log.Logger.Infof("config file opened successfully. filename: %s", filename)
+	log.Infof("config file opened successfully. filename: %s", filename)
 }

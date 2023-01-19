@@ -12,6 +12,7 @@ import (
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/http/handlers"
 	v1 "github.com/AliRasoulinejad/cryptos-backend/internal/http/handlers/v1"
+	"github.com/AliRasoulinejad/cryptos-backend/internal/http/middlewares"
 )
 
 type server struct {
@@ -38,6 +39,7 @@ func (s *server) Serve(app *app.Application) *server {
 		AllowOrigins: config.C.Basic.CORSWhiteList,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
+	s.e.Use(middlewares.EchoMiddleware)
 
 	// Registering routes
 	s.e.GET("/", handlers.Index)
