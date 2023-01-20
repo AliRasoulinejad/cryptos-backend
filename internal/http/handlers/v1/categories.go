@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
@@ -27,15 +29,20 @@ type Category interface {
 
 type category struct {
 	repositories *app.Repositories
+	tracer       trace.Tracer
 }
 
-func NewCategoryHandler(repositories *app.Repositories) Category {
-	return category{repositories: repositories}
+func NewCategoryHandler(repositories *app.Repositories, trace trace.Tracer) Category {
+	return category{repositories: repositories, tracer: trace}
 }
 
 func (c category) All() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
-		categories, err := c.repositories.CategoryRepo.SelectAll()
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := c.tracer.Start(baseCtx, "all-handler")
+		defer span.End()
+
+		categories, err := c.repositories.CategoryRepo.SelectAll(spanCtx)
 		if err != nil {
 
 			log.Logger.WithError(err).Errorf("error in get all categories")
@@ -54,8 +61,12 @@ func (c category) All() func(ctx echo.Context) error {
 
 func (c category) Get() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := c.tracer.Start(baseCtx, "get-handler")
+		defer span.End()
+
 		slug := ctx.Param("slug")
-		cat, err := c.repositories.CategoryRepo.GetBySlug(slug)
+		cat, err := c.repositories.CategoryRepo.GetBySlug(spanCtx, slug)
 		if err != nil {
 			log.Logger.WithError(err).Errorf("error in get category by slug")
 
@@ -70,6 +81,10 @@ func (c category) Get() func(ctx echo.Context) error {
 
 func (c category) Top() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := c.tracer.Start(baseCtx, "top-handler")
+		defer span.End()
+
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
 			log.Logger.WithError(err).Error("count number is not integer")
@@ -77,7 +92,7 @@ func (c category) Top() func(ctx echo.Context) error {
 			return fmt.Errorf("count number is not integer")
 		}
 
-		categories, err := c.repositories.CategoryRepo.SelectTopN(cnt)
+		categories, err := c.repositories.CategoryRepo.SelectTopN(spanCtx, cnt)
 		if err != nil {
 			log.Logger.WithError(err).Errorf("error in get top categories")
 

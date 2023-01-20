@@ -9,13 +9,14 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-	"go.opentelemetry.io/otel/trace"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 )
 
-var Tracer trace.Tracer
+const (
+	SpanCtxName = "span-context"
+)
 
 func (application *Application) WithTracer() {
 	configs := config.C.TraceProvider
@@ -45,5 +46,5 @@ func (application *Application) WithTracer() {
 	)
 
 	otel.SetTracerProvider(traceProvider)
-	Tracer = traceProvider.Tracer(configs.ServiceName)
+	application.Tracer = traceProvider.Tracer(configs.ServiceName)
 }

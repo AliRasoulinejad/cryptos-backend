@@ -1,12 +1,14 @@
 package v1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
@@ -51,23 +53,28 @@ type Blog interface {
 
 type blog struct {
 	repositories *app.Repositories
+	tracer       trace.Tracer
 }
 
-func NewBlogHandler(repositories *app.Repositories) Blog {
-	return blog{repositories: repositories}
+func NewBlogHandler(repositories *app.Repositories, tracer trace.Tracer) Blog {
+	return blog{repositories: repositories, tracer: tracer}
 }
 
 func (b blog) All() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := b.tracer.Start(baseCtx, "all-handler")
+		defer span.End()
+
 		page, err := strconv.Atoi(ctx.Request().URL.Query().Get("pageNumber"))
 		categorySlug := ctx.Request().URL.Query().Get("categorySlug")
 		var categoryID int64
 		if categorySlug == "" {
 			categoryID = 0
 		} else {
-			categoryID, err = b.repositories.CategoryRepo.GetIDBySlug(categorySlug)
+			categoryID, err = b.repositories.CategoryRepo.GetIDBySlug(spanCtx, categorySlug)
 			if err != nil {
-				log.Logger.WithError(err).Errorf("error in get categoryID")
+				log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get categoryID")
 
 				return fmt.Errorf("error in get categoryID")
 			}
@@ -77,9 +84,9 @@ func (b blog) All() func(ctx echo.Context) error {
 			}
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectAllByPaginationByCategorySlug(10, page, categoryID)
+		blogs, err := b.repositories.BlogRepo.SelectAllByPaginationByCategorySlug(spanCtx, 10, page, categoryID)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get all blogs")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get all blogs")
 
 			return fmt.Errorf("error in get all blogs")
 		}
@@ -92,10 +99,14 @@ func (b blog) All() func(ctx echo.Context) error {
 
 func (b blog) Get() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := b.tracer.Start(baseCtx, "get-handler")
+		defer span.End()
+
 		slug := ctx.Param("slug")
-		blg, err := b.repositories.BlogRepo.GetBySlug(slug)
+		blg, err := b.repositories.BlogRepo.GetBySlug(spanCtx, slug)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get blog by slug")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get blog by slug")
 
 			return fmt.Errorf("error in get blog by slug")
 		}
@@ -111,17 +122,21 @@ func (b blog) Get() func(ctx echo.Context) error {
 
 func (b blog) GetComments() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := b.tracer.Start(baseCtx, "get-comments-handler")
+		defer span.End()
+
 		slug := ctx.Param("slug")
-		blogID, err := b.repositories.BlogRepo.GetIDBySlug(slug)
+		blogID, err := b.repositories.BlogRepo.GetIDBySlug(spanCtx, slug)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get top blogs")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
 
-		comments, err := b.repositories.CommentRepo.SelectByBlogID(blogID)
+		comments, err := b.repositories.CommentRepo.SelectByBlogID(spanCtx, blogID)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in fetch blog comments")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in fetch blog comments")
 
 			return fmt.Errorf("error in fetch blog comments")
 		}
@@ -145,16 +160,20 @@ func (b blog) GetRecommendations() func(ctx echo.Context) error {
 
 func (b blog) Popular() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := b.tracer.Start(baseCtx, "popular-handler")
+		defer span.End()
+
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.Logger.WithError(err).Error("count number is not integer")
+			log.Logger.WithContext(spanCtx).WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectTopN(cnt)
+		blogs, err := b.repositories.BlogRepo.SelectTopN(spanCtx, cnt)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get top blogs")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
@@ -167,16 +186,20 @@ func (b blog) Popular() func(ctx echo.Context) error {
 
 func (b blog) Recent() func(ctx echo.Context) error {
 	return func(ctx echo.Context) error {
+		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
+		spanCtx, span := b.tracer.Start(baseCtx, "recent-handler")
+		defer span.End()
+
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.Logger.WithError(err).Error("count number is not integer")
+			log.Logger.WithContext(spanCtx).WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectLastN(cnt)
+		blogs, err := b.repositories.BlogRepo.SelectLastN(spanCtx, cnt)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get %v recent blogs", cnt)
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get %v recent blogs", cnt)
 
 			return fmt.Errorf("error in get %v recent blogs", cnt)
 		}

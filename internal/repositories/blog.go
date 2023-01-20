@@ -1,9 +1,11 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"time"
 
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
@@ -15,29 +17,33 @@ var (
 )
 
 type Blog interface {
-	SelectAllByPaginationByCategorySlug(blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error)
-	SelectByCategoryID(categoryID int64) (*[]models.Blog, error)
-	SelectTopN(n int) (*[]models.Blog, error)
-	SelectLastN(n int) (*[]models.Blog, error)
-	GetIDBySlug(slug string) (int64, error)
-	GetBySlug(slug string) (*models.Blog, error)
+	SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error)
+	SelectByCategoryID(ctx context.Context, categoryID int64) (*[]models.Blog, error)
+	SelectTopN(ctx context.Context, n int) (*[]models.Blog, error)
+	SelectLastN(ctx context.Context, n int) (*[]models.Blog, error)
+	GetIDBySlug(ctx context.Context, slug string) (int64, error)
+	GetBySlug(ctx context.Context, slug string) (*models.Blog, error)
 }
 
 type blog struct {
-	db *gorm.DB
+	db     *gorm.DB
+	tracer trace.Tracer
 }
 
-func NewBlogRepo(db *gorm.DB) Blog {
-	return &blog{db: db}
+func NewBlogRepo(db *gorm.DB, tracer trace.Tracer) Blog {
+	return &blog{db: db, tracer: tracer}
 }
 
-func (b *blog) SelectAllByPaginationByCategorySlug(blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error) {
+func (b *blog) SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectAllByPaginationByCategorySlug")
+	defer span.End()
+
 	max := config.C.Basic.Pagination.MaximumBlogPerPage
 	if blogPerPage > max {
 		return nil, ErrMaximumPageSize
 	}
 
-	query := b.db.Limit(blogPerPage).
+	query := b.db.WithContext(spanCtx).Limit(blogPerPage).
 		Offset(pageNumber * blogPerPage).
 		Where("publish=true AND publish = true")
 	if categoryID != 0 {
@@ -54,9 +60,12 @@ func (b *blog) SelectAllByPaginationByCategorySlug(blogPerPage, pageNumber int, 
 	return &blogs, nil
 }
 
-func (b *blog) SelectByCategoryID(categoryID int64) (*[]models.Blog, error) {
+func (b *blog) SelectByCategoryID(ctx context.Context, categoryID int64) (*[]models.Blog, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectByCategoryID")
+	defer span.End()
+
 	var blogs []models.Blog
-	result := b.db.Where("publish = true").
+	result := b.db.WithContext(spanCtx).Where("publish = true").
 		First(&blogs, "publish=true AND category_id = ?", categoryID)
 	if result.Error != nil {
 		return nil, result.Error
@@ -65,11 +74,14 @@ func (b *blog) SelectByCategoryID(categoryID int64) (*[]models.Blog, error) {
 	return &blogs, nil
 }
 
-func (b *blog) SelectTopN(n int) (*[]models.Blog, error) {
+func (b *blog) SelectTopN(ctx context.Context, n int) (*[]models.Blog, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectTopN")
+	defer span.End()
+
 	var blogs []models.Blog
 	lastDays := config.C.Basic.PopularPostsFromLastDays
 	past2days := time.Now().AddDate(0, 0, -1*lastDays)
-	result := b.db.Limit(n).
+	result := b.db.WithContext(spanCtx).Limit(n).
 		Where("publish=true AND category_id != 1 AND created_at > ?", past2days).
 		Find(&blogs)
 
@@ -80,11 +92,14 @@ func (b *blog) SelectTopN(n int) (*[]models.Blog, error) {
 	return &blogs, nil
 }
 
-func (b *blog) SelectLastN(n int) (*[]models.Blog, error) {
+func (b *blog) SelectLastN(ctx context.Context, n int) (*[]models.Blog, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectLastN")
+	defer span.End()
+
 	var blogs []models.Blog
 	lastDays := config.C.Basic.PopularPostsFromLastDays
 	past2days := time.Now().AddDate(0, 0, -1*lastDays)
-	result := b.db.Limit(n).
+	result := b.db.WithContext(spanCtx).Limit(n).
 		Where("publish=true AND category_id != 1 AND created_at > ? ORDER BY reading_time DESC", past2days).
 		Find(&blogs)
 	if result.Error != nil {
@@ -94,9 +109,12 @@ func (b *blog) SelectLastN(n int) (*[]models.Blog, error) {
 	return &blogs, nil
 }
 
-func (b *blog) GetIDBySlug(slug string) (int64, error) {
+func (b *blog) GetIDBySlug(ctx context.Context, slug string) (int64, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: GetIDBySlug")
+	defer span.End()
+
 	var ID int64
-	result := b.db.Raw("SELECT id FROM blogs WHERE publish=true AND slug = ?", slug).Scan(&ID)
+	result := b.db.WithContext(spanCtx).Raw("SELECT id FROM blogs WHERE publish=true AND slug = ?", slug).Scan(&ID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
@@ -104,9 +122,12 @@ func (b *blog) GetIDBySlug(slug string) (int64, error) {
 	return ID, nil
 }
 
-func (b *blog) GetBySlug(slug string) (*models.Blog, error) {
+func (b *blog) GetBySlug(ctx context.Context, slug string) (*models.Blog, error) {
+	spanCtx, span := b.tracer.Start(ctx, "blog-repository: GetBySlug")
+	defer span.End()
+
 	var blg models.Blog
-	result := b.db.First(&blg, "publish=true AND slug = ?", slug)
+	result := b.db.WithContext(spanCtx).First(&blg, "publish=true AND slug = ?", slug)
 	if result.Error != nil {
 		return nil, result.Error
 	}

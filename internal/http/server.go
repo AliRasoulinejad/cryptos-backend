@@ -39,13 +39,14 @@ func (s *server) Serve(app *app.Application) *server {
 		AllowOrigins: config.C.Basic.CORSWhiteList,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
+	s.e.Use(middlewares.TracingMiddleware(app.Tracer))
 	s.e.Use(middlewares.EchoMiddleware)
 
 	// Registering routes
 	s.e.GET("/", handlers.Index)
 	s.e.GET("/health", handlers.Health)
 
-	categoryHandler := v1.NewCategoryHandler(app.Repositories)
+	categoryHandler := v1.NewCategoryHandler(app.Repositories, app.Tracer)
 	categoryRoutes := s.e.Group("/api/v1/categories")
 	{
 		categoryRoutes.GET("", categoryHandler.All())
@@ -53,7 +54,7 @@ func (s *server) Serve(app *app.Application) *server {
 		categoryRoutes.GET("/top", categoryHandler.Top())
 	}
 
-	blogHandler := v1.NewBlogHandler(app.Repositories)
+	blogHandler := v1.NewBlogHandler(app.Repositories, app.Tracer)
 	blogRoutes := s.e.Group("/api/v1/blogs")
 	{
 		blogRoutes.GET("", blogHandler.All()) // page , categorySlug

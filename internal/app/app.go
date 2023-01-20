@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -54,6 +55,7 @@ C:::::C               r:::::r               y:::::y:::::y       p:::::p     p:::
 type Application struct {
 	DB           *gorm.DB
 	Repositories *Repositories
+	Tracer       trace.Tracer
 }
 
 func Banner() string {
