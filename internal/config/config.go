@@ -11,10 +11,21 @@ import (
 var C *Config
 
 type Config struct {
-	Logger     Logger      `mapstructure:"logger"`
-	HTTPServer HTTPServer  `mapstructure:"http_server"`
-	Database   SQLDatabase `mapstructure:"database"`
-	Basic      Basic       `mapstructure:"basic"`
+	Basic         Basic         `mapstructure:"basic"`
+	Logger        Logger        `mapstructure:"logger"`
+	HTTPServer    HTTPServer    `mapstructure:"http_server"`
+	Database      SQLDatabase   `mapstructure:"database"`
+	TraceProvider TraceProvider `mapstructure:"trace_provider"`
+}
+
+type Basic struct {
+	CORSWhiteList            []string   `mapstructure:"cors_white_list"`
+	PopularPostsFromLastDays int        `mapstructure:"popular_posts_from_last_days"`
+	Pagination               Pagination `mapstructure:"pagination"`
+}
+
+type Pagination struct {
+	MaximumBlogPerPage int `mapstructure:"maximum_blog_per_page"`
 }
 
 type Logger struct {
@@ -80,14 +91,12 @@ func (d SQLDatabase) String() (str string) {
 	return
 }
 
-type Basic struct {
-	CORSWhiteList            []string   `mapstructure:"cors_white_list"`
-	PopularPostsFromLastDays int        `mapstructure:"popular_posts_from_last_days"`
-	Pagination               Pagination `mapstructure:"pagination"`
-}
-
-type Pagination struct {
-	MaximumBlogPerPage int `mapstructure:"maximum_blog_per_page"`
+type TraceProvider struct {
+	ServiceName           string  `mapstructure:"service_name"`
+	DeploymentEnvironment string  `mapstructure:"deployment_environment"`
+	AgentHost             string  `yaml:"agent_host"`
+	AgentPort             string  `yaml:"agent_port"`
+	SamplerRatio          float64 `yaml:"sampler_ratio"`
 }
 
 func Init(filename string) {

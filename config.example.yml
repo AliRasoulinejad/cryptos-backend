@@ -1,3 +1,9 @@
+basic:
+  cors_white_list:
+    - 0.0.0.0
+  popular_posts_from_last_days: 2
+  pagination:
+    maximum_blog_per_page: 100
 logger:
   level: "info"
 http_server:
@@ -14,9 +20,9 @@ database:
   user: "ali"
   password: "a1234567"
   time_zone: "Asia/Tehran"
-basic:
-  cors_white_list:
-    - 0.0.0.0
-  popular_posts_from_last_days: 2
-  pagination:
-    maximum_blog_per_page: 100
+trace_provider:
+  service_name: "cryptos-backend"
+  deployment_environment: "local"
+  agent_host: "localhost"
+  agent_port: "6831"
+  sampler_ratio: 1.0

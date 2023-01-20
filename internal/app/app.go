@@ -1,10 +1,29 @@
 package app
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
 // AppName is the app's name .
+var (
+	// GitCommit is SHA1 ref of current build
+	GitCommit string
+
+	// GitRef is branch name of current build
+	GitRef string
+
+	// GitTag is version name of current build
+	GitTag string
+
+	// BuildDate is the timestamp of build
+	BuildDate string
+
+	// CompilerVersion is the version of go compiler
+	CompilerVersion string
+)
+
 const AppName string = "cryptos-backend"
 
 const asciiArt = `
@@ -38,5 +57,5 @@ type Application struct {
 }
 
 func Banner() string {
-	return asciiArt
+	return asciiArt + "\n" + fmt.Sprintf("Tag: %s, Ref: %s, GitCommit: %s, BuildDate: %s, Compiler: %s", GitTag, GitRef, GitCommit, BuildDate, CompilerVersion)
 }

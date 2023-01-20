@@ -23,6 +23,7 @@ func serve(_ *cobra.Command, _ []string) {
 	application := &app.Application{}
 	application.WithDB()
 	application.WithRepositories()
+	application.WithTracer()
 
 	shutdownReady := internalHttp.
 		NewServer().
