@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -13,6 +14,10 @@ func (application *Application) WithDB() {
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
 	if err != nil {
 		log.Logger.WithError(err).Fatal("error in connect to database")
+	}
+
+	if err := db.Use(otelgorm.NewPlugin()); err != nil {
+		log.Logger.WithError(err).Fatal("error in connect open-telemetry to database")
 	}
 
 	application.DB = db
