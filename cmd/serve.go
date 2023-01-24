@@ -21,9 +21,9 @@ var serveCMD = &cobra.Command{
 func serve(_ *cobra.Command, _ []string) {
 	shutdownRequest := make(chan struct{})
 	application := &app.Application{}
+	application.WithTracer()
 	application.WithDB()
 	application.WithRepositories()
-	application.WithTracer()
 
 	shutdownReady := internalHttp.
 		NewServer().

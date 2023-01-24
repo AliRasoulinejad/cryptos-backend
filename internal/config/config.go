@@ -94,9 +94,9 @@ func (d SQLDatabase) String() (str string) {
 type TraceProvider struct {
 	ServiceName           string  `mapstructure:"service_name"`
 	DeploymentEnvironment string  `mapstructure:"deployment_environment"`
-	AgentHost             string  `yaml:"agent_host"`
-	AgentPort             string  `yaml:"agent_port"`
-	SamplerRatio          float64 `yaml:"sampler_ratio"`
+	AgentHost             string  `mapstructure:"agent_host"`
+	AgentPort             string  `mapstructure:"agent_port"`
+	SamplerRatio          float64 `mapstructure:"sampler_ratio"`
 }
 
 func Init(filename string) {
