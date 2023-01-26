@@ -25,7 +25,7 @@ var (
 	CompilerVersion string
 )
 
-const AppName string = "cryptos-backend"
+const AppName string = "cryptos_backend"
 
 const asciiArt = `
         CCCCCCCCCCCCC                                                                       tttt                                            

@@ -11,8 +11,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-#      jaeger:
-#        condition: service_started
+      jaeger:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
     restart: on-failure
     command: bash -c "./cryptos cryptos -config config.yml"
 
@@ -23,7 +25,7 @@ services:
     environment:
       POSTGRES_DB: "cryptos"
       POSTGRES_USER: "cryptos"
-      POSTGRES_PASSWORD: "CrypT0$$"
+      POSTGRES_PASSWORD: "cryptos"
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "cryptos", "-d", "cryptos" ]
       interval: 10s
@@ -41,5 +43,15 @@ services:
     environment:
       - JAEGER_AGENT_HOST=jaeger
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    environment:
+      - JAEGER_AGENT_HOST=jaeger
+    volumes:
+      - .compose/prometheus.yml:/etc/prometheus/prometheus.yml
+
 volumes:
   postgres_data:
+  prometheus_data:
