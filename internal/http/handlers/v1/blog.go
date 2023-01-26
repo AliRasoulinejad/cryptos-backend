@@ -43,12 +43,12 @@ type commentResponse struct {
 }
 
 type Blog interface {
-	All() func(ctx echo.Context) error
-	Get() func(ctx echo.Context) error
-	GetComments() func(ctx echo.Context) error
-	// GetRecommendations() func(ctx echo.Context) error
-	Popular() func(ctx echo.Context) error
-	Recent() func(ctx echo.Context) error
+	All() echo.HandlerFunc
+	Get() echo.HandlerFunc
+	GetComments() echo.HandlerFunc
+	// GetRecommendations() echo.HandlerFunc)
+	Popular() echo.HandlerFunc
+	Recent() echo.HandlerFunc
 }
 
 type blog struct {
@@ -60,7 +60,7 @@ func NewBlogHandler(repositories *app.Repositories, tracer trace.Tracer) Blog {
 	return blog{repositories: repositories, tracer: tracer}
 }
 
-func (b blog) All() func(ctx echo.Context) error {
+func (b blog) All() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := b.tracer.Start(baseCtx, "all-handler")
@@ -97,7 +97,7 @@ func (b blog) All() func(ctx echo.Context) error {
 	}
 }
 
-func (b blog) Get() func(ctx echo.Context) error {
+func (b blog) Get() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := b.tracer.Start(baseCtx, "get-handler")
@@ -120,7 +120,7 @@ func (b blog) Get() func(ctx echo.Context) error {
 	}
 }
 
-func (b blog) GetComments() func(ctx echo.Context) error {
+func (b blog) GetComments() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := b.tracer.Start(baseCtx, "get-comments-handler")
@@ -153,12 +153,12 @@ func (b blog) GetComments() func(ctx echo.Context) error {
 	}
 }
 
-func (b blog) GetRecommendations() func(ctx echo.Context) error {
+func (b blog) GetRecommendations() echo.HandlerFunc {
 	// TODO: recode after establishing an stabling
 	return nil
 }
 
-func (b blog) Popular() func(ctx echo.Context) error {
+func (b blog) Popular() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := b.tracer.Start(baseCtx, "popular-handler")
@@ -184,7 +184,7 @@ func (b blog) Popular() func(ctx echo.Context) error {
 	}
 }
 
-func (b blog) Recent() func(ctx echo.Context) error {
+func (b blog) Recent() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := b.tracer.Start(baseCtx, "recent-handler")

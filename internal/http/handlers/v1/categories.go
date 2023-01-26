@@ -22,9 +22,9 @@ type categoryResponse struct {
 }
 
 type Category interface {
-	All() func(ctx echo.Context) error
-	Get() func(ctx echo.Context) error
-	Top() func(ctx echo.Context) error
+	All() echo.HandlerFunc
+	Get() echo.HandlerFunc
+	Top() echo.HandlerFunc
 }
 
 type category struct {
@@ -36,7 +36,7 @@ func NewCategoryHandler(repositories *app.Repositories, trace trace.Tracer) Cate
 	return category{repositories: repositories, tracer: trace}
 }
 
-func (c category) All() func(ctx echo.Context) error {
+func (c category) All() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := c.tracer.Start(baseCtx, "all-handler")
@@ -59,7 +59,7 @@ func (c category) All() func(ctx echo.Context) error {
 	}
 }
 
-func (c category) Get() func(ctx echo.Context) error {
+func (c category) Get() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := c.tracer.Start(baseCtx, "get-handler")
@@ -79,7 +79,7 @@ func (c category) Get() func(ctx echo.Context) error {
 	}
 }
 
-func (c category) Top() func(ctx echo.Context) error {
+func (c category) Top() echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		baseCtx := ctx.Get(app.SpanCtxName).(context.Context)
 		spanCtx, span := c.tracer.Start(baseCtx, "top-handler")

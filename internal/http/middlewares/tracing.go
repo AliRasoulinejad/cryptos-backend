@@ -7,12 +7,18 @@ import (
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 )
 
-func TracingMiddleware(tracer trace.Tracer) func(next echo.HandlerFunc) echo.HandlerFunc {
+func TracingMiddleware(tracer trace.Tracer, skipURLs []string) func(next echo.HandlerFunc) echo.HandlerFunc {
+	sURLs := skipper(skipURLs)
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			spanCtx, span := tracer.Start(c.Request().Context(), c.Request().URL.Path)
-			c.Set(app.SpanCtxName, spanCtx)
-			result := next(c)
+		return func(ctx echo.Context) error {
+			if _, ok := sURLs[ctx.Request().RequestURI]; ok {
+				return next(ctx)
+			}
+
+			spanCtx, span := tracer.Start(ctx.Request().Context(), ctx.Request().URL.Path)
+			ctx.Set(app.SpanCtxName, spanCtx)
+			result := next(ctx)
 			span.End()
 
 			return result

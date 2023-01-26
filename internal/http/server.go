@@ -39,12 +39,16 @@ func (s *server) Serve(app *app.Application) *server {
 		AllowOrigins: config.C.Basic.CORSWhiteList,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
-	s.e.Use(middlewares.TracingMiddleware(app.Tracer))
-	s.e.Use(middlewares.EchoMiddleware)
+
+	skipURLs := []string{"/", "/health", "/metrics"}
+	s.e.Use(middlewares.TracingMiddleware(app.Tracer, skipURLs))
+	s.e.Use(middlewares.MetricsMiddleware())
+	s.e.Use(middlewares.LoggingMiddleware(skipURLs))
 
 	// Registering routes
-	s.e.GET("/", handlers.Index)
-	s.e.GET("/health", handlers.Health)
+	s.e.GET("/", handlers.Index())
+	s.e.GET("/health", handlers.Health())
+	s.e.GET("/metrics", handlers.Metric())
 
 	categoryHandler := v1.NewCategoryHandler(app.Repositories, app.Tracer)
 	categoryRoutes := s.e.Group("/api/v1/categories")
