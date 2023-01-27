@@ -356,8 +356,12 @@ github.com/subosito/gotenv v1.4.1 h1:jyEFiXpy21Wm81FBN71l9VoMMV8H8jG+qIK3GCpY6Qs
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.18 h1:dpqhMECODRQn0f169n/wd21ks51SvfdmoJK+22RyTec=
 github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.18/go.mod h1:idcTn83I+CDgj1p0k5hZ56ZvJ7pQjv+5GPthtS7Qn/c=
+github.com/uptrace/opentelemetry-go-extra/otellogrus v0.1.18 h1:3UVwJbeF2xV7r7rB1KLGsYlZGoF9P25VkyilyI5zqmY=
+github.com/uptrace/opentelemetry-go-extra/otellogrus v0.1.18/go.mod h1:1jmEHPb6FL22RcHSsVaPg9UH1IFOV0hGFdZYgkyJeag=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.1.18 h1:NS1VEAtfDB9d5tyYR/VdsHE9UMMd88isuwW8N+XrsXw=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.1.18/go.mod h1:YsFzaDbIGJJDr5O++EndEXcVCRd9W4GdPRlOjJV+sEE=
+github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.18 h1:zsEhOhAfpNejDoJQi0gLsnN1bf3x2h7dTF7XNS2MJPE=
+github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.18/go.mod h1:7le+eIjcOjMMZ7QJqmzZFxcmZNvIK1qBdsYkHzaYuMU=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=

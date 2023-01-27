@@ -9,6 +9,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.14.0
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.18
+	github.com/uptrace/opentelemetry-go-extra/otellogrus v0.1.18
 	go.opentelemetry.io/otel v1.11.2
 	go.opentelemetry.io/otel/exporters/jaeger v1.11.2
 	go.opentelemetry.io/otel/sdk v1.11.2
@@ -54,6 +55,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.1.18 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.18 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opentelemetry.io/otel/metric v0.34.0 // indirect

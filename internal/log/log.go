@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/uptrace/opentelemetry-go-extra/otellogrus"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
 )
@@ -19,6 +20,7 @@ func InitLogger() {
 	Logger = &logrus.Logger{
 		Out:   os.Stderr,
 		Level: level,
+		Hooks: make(logrus.LevelHooks),
 		// ReportCaller: true,
 		Formatter: &logrus.TextFormatter{
 			ForceColors:            true,
@@ -28,4 +30,12 @@ func InitLogger() {
 			// LogFormat:       "[%time%] %lvl%, %msg%",
 		},
 	}
+
+	Logger.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+		logrus.InfoLevel,
+	)))
 }
