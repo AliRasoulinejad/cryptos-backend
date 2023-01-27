@@ -13,27 +13,19 @@ import (
 	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
 )
 
-type categoryResponse struct {
-	ID          uint   `json:"id"`
-	Title       string `json:"title"`
-	Slug        string `json:"slug"`
-	Image       string `json:"image"`
-	Description string `json:"description"`
-}
-
-type Category interface {
+type CategoryHandler interface {
 	All() echo.HandlerFunc
 	Get() echo.HandlerFunc
 	Top() echo.HandlerFunc
 }
 
 type category struct {
-	repositories *app.Repositories
-	tracer       trace.Tracer
+	services *app.Services
+	tracer   trace.Tracer
 }
 
-func NewCategoryHandler(repositories *app.Repositories, trace trace.Tracer) Category {
-	return category{repositories: repositories, tracer: trace}
+func NewCategoryHandler(services *app.Services, trace trace.Tracer) CategoryHandler {
+	return category{services: services, tracer: trace}
 }
 
 func (c category) All() echo.HandlerFunc {
@@ -42,19 +34,14 @@ func (c category) All() echo.HandlerFunc {
 		spanCtx, span := c.tracer.Start(baseCtx, "all-handler")
 		defer span.End()
 
-		categories, err := c.repositories.CategoryRepo.SelectAll(spanCtx)
+		categories, err := c.services.CategoryService.All(spanCtx)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get all categories")
 
 			return fmt.Errorf("error in get all categories")
 		}
 
-		categoryResponses := make([]categoryResponse, len(*categories))
-		for i, cat := range *categories {
-			categoryResponses[i] = categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
-		}
-
-		return ctx.JSON(http.StatusOK, categoryResponses)
+		return ctx.JSON(http.StatusOK, categories)
 	}
 }
 
@@ -65,16 +52,14 @@ func (c category) Get() echo.HandlerFunc {
 		defer span.End()
 
 		slug := ctx.Param("slug")
-		cat, err := c.repositories.CategoryRepo.GetBySlug(spanCtx, slug)
+		cat, err := c.services.CategoryService.GetBySlug(spanCtx, slug)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get category by slug")
 
 			return fmt.Errorf("error in get category by slug")
 		}
 
-		response := categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
-
-		return ctx.JSON(http.StatusOK, response)
+		return ctx.JSON(http.StatusOK, cat)
 	}
 }
 
@@ -91,18 +76,13 @@ func (c category) Top() echo.HandlerFunc {
 			return fmt.Errorf("count number is not integer")
 		}
 
-		categories, err := c.repositories.CategoryRepo.SelectTopN(spanCtx, cnt)
+		categories, err := c.services.CategoryService.TopN(spanCtx, cnt)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top categories")
 
 			return fmt.Errorf("error in get top categories")
 		}
 
-		categoryResponses := make([]categoryResponse, cnt)
-		for i, cat := range *categories {
-			categoryResponses[i] = categoryResponse{cat.ID, cat.Title, cat.Slug, cat.Image, cat.Description}
-		}
-
-		return ctx.JSON(http.StatusOK, categoryResponses)
+		return ctx.JSON(http.StatusOK, categories)
 	}
 }

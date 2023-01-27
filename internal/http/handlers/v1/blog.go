@@ -12,7 +12,6 @@ import (
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/app"
 	"github.com/AliRasoulinejad/cryptos-backend/internal/log"
-	"github.com/AliRasoulinejad/cryptos-backend/internal/models"
 )
 
 type blogResponse struct {
@@ -32,16 +31,6 @@ type blogResponse struct {
 	DisLikesCount  uint64    `json:"disLikesCount"`
 }
 
-type commentResponse struct {
-	ID        uint      `json:"id"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Text      string    `json:"text"`
-	BlogID    int64     `json:"blogID"`
-	UserID    int64     `json:"userID"`
-	Accepted  bool      `json:"accepted"`
-}
-
 type Blog interface {
 	All() echo.HandlerFunc
 	Get() echo.HandlerFunc
@@ -52,12 +41,12 @@ type Blog interface {
 }
 
 type blog struct {
-	repositories *app.Repositories
-	tracer       trace.Tracer
+	services *app.Services
+	tracer   trace.Tracer
 }
 
-func NewBlogHandler(repositories *app.Repositories, tracer trace.Tracer) Blog {
-	return blog{repositories: repositories, tracer: tracer}
+func NewBlogHandler(services *app.Services, tracer trace.Tracer) Blog {
+	return blog{services: services, tracer: tracer}
 }
 
 func (b blog) All() echo.HandlerFunc {
@@ -72,7 +61,7 @@ func (b blog) All() echo.HandlerFunc {
 		if categorySlug == "" {
 			categoryID = 0
 		} else {
-			categoryID, err = b.repositories.CategoryRepo.GetIDBySlug(spanCtx, categorySlug)
+			categoryID, err = b.services.CategoryService.GetIDBySlug(spanCtx, categorySlug)
 			if err != nil {
 				log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get categoryID")
 
@@ -84,16 +73,14 @@ func (b blog) All() echo.HandlerFunc {
 			}
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectAllByPaginationByCategorySlug(spanCtx, 10, page, categoryID)
+		blogs, err := b.services.BlogService.SelectAllByPaginationByCategorySlug(spanCtx, 10, page, categoryID)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get all blogs")
 
 			return fmt.Errorf("error in get all blogs")
 		}
 
-		blogResponses := makeResponseFromBlogModel(*blogs)
-
-		return ctx.JSON(http.StatusOK, blogResponses)
+		return ctx.JSON(http.StatusOK, blogs)
 	}
 }
 
@@ -104,19 +91,14 @@ func (b blog) Get() echo.HandlerFunc {
 		defer span.End()
 
 		slug := ctx.Param("slug")
-		blg, err := b.repositories.BlogRepo.GetBySlug(spanCtx, slug)
+		blog, err := b.services.BlogService.GetBySlug(spanCtx, slug)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get blog by slug")
 
 			return fmt.Errorf("error in get blog by slug")
 		}
 
-		response := blogResponse{blg.ID, blg.CreatedAt, blg.UpdatedAt, blg.Title,
-			blg.Slug, blg.AuthorID, blg.ConversationID, blg.Content, blg.TextIndex,
-			blg.CategoryID, blg.Image, blg.ReadingTime, blg.LikesCount, blg.DisLikesCount,
-		}
-
-		return ctx.JSON(http.StatusOK, response)
+		return ctx.JSON(http.StatusOK, blog)
 	}
 }
 
@@ -127,29 +109,21 @@ func (b blog) GetComments() echo.HandlerFunc {
 		defer span.End()
 
 		slug := ctx.Param("slug")
-		blogID, err := b.repositories.BlogRepo.GetIDBySlug(spanCtx, slug)
+		blogID, err := b.services.BlogService.GetIDBySlug(spanCtx, slug)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
 
-		comments, err := b.repositories.CommentRepo.SelectByBlogID(spanCtx, blogID)
+		comments, err := b.services.CommentService.FetchByBlogID(spanCtx, blogID)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in fetch blog comments")
 
 			return fmt.Errorf("error in fetch blog comments")
 		}
 
-		commentsResponses := make([]commentResponse, len(*comments))
-		for i, comment := range *comments {
-			commentsResponses[i] = commentResponse{
-				comment.ID, comment.CreatedAt, comment.UpdatedAt, comment.Text, comment.BlogID,
-				comment.UserID, comment.Accepted,
-			}
-		}
-
-		return ctx.JSON(http.StatusOK, commentsResponses)
+		return ctx.JSON(http.StatusOK, comments)
 	}
 }
 
@@ -171,16 +145,14 @@ func (b blog) Popular() echo.HandlerFunc {
 			return fmt.Errorf("count number is not integer")
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectTopN(spanCtx, cnt)
+		blogs, err := b.services.BlogService.SelectTopN(spanCtx, cnt)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top blogs")
 
 			return fmt.Errorf("error in get top blogs")
 		}
 
-		blogResponses := makeResponseFromBlogModel(*blogs)
-
-		return ctx.JSON(http.StatusOK, blogResponses)
+		return ctx.JSON(http.StatusOK, blogs)
 	}
 }
 
@@ -197,27 +169,13 @@ func (b blog) Recent() echo.HandlerFunc {
 			return fmt.Errorf("count number is not integer")
 		}
 
-		blogs, err := b.repositories.BlogRepo.SelectLastN(spanCtx, cnt)
+		blogs, err := b.services.BlogService.SelectLastN(spanCtx, cnt)
 		if err != nil {
 			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get %v recent blogs", cnt)
 
 			return fmt.Errorf("error in get %v recent blogs", cnt)
 		}
 
-		blogResponses := makeResponseFromBlogModel(*blogs)
-
-		return ctx.JSON(http.StatusOK, blogResponses)
+		return ctx.JSON(http.StatusOK, blogs)
 	}
-}
-
-func makeResponseFromBlogModel(blogs []models.Blog) []blogResponse {
-	blogResponses := make([]blogResponse, len(blogs))
-	for i, blg := range blogs {
-		blogResponses[i] = blogResponse{blg.ID, blg.CreatedAt, blg.UpdatedAt, blg.Title,
-			blg.Slug, blg.AuthorID, blg.ConversationID, blg.Content, blg.TextIndex,
-			blg.CategoryID, blg.Image, blg.ReadingTime, blg.LikesCount, blg.DisLikesCount,
-		}
-	}
-
-	return blogResponses
 }

@@ -2,27 +2,44 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 
 	"github.com/AliRasoulinejad/cryptos-backend/internal/config"
-	"github.com/AliRasoulinejad/cryptos-backend/internal/models"
 )
 
-var (
-	ErrMaximumPageSize = errors.New("requested blogs count per page is out of size")
-)
+type BlogDTO struct {
+	ID             uint `gorm:"primaryKey"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Title          string  `gorm:"size:150"`
+	Slug           string  `gorm:"size:150; unique"`
+	AuthorID       int64   `gorm:"column:author_id; unique;"`
+	Author         UserDTO `gorm:"references:ID;foreignKey:AuthorID"`
+	ConversationID int64   `gorm:"column:conversation_id"`
+	Content        string  `gorm:""`
+	TextIndex      string  `gorm:""`
+	CategoryID     int64   `gorm:"column:category_id; unique; foreignKey; default:1"`
+	Image          *string `gorm:""`
+	ReadingTime    int     `gorm:""`
+	Publish        bool    `gorm:"default:false"`
+	LikesCount     uint64  `gorm:"default:0"`
+	DisLikesCount  uint64  `gorm:"default:0"`
+}
+
+func (BlogDTO) TableName() string {
+	return "blogs"
+}
 
 type Blog interface {
-	SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error)
-	SelectByCategoryID(ctx context.Context, categoryID int64) (*[]models.Blog, error)
-	SelectTopN(ctx context.Context, n int) (*[]models.Blog, error)
-	SelectLastN(ctx context.Context, n int) (*[]models.Blog, error)
+	SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]BlogDTO, error)
+	SelectByCategoryID(ctx context.Context, categoryID int64) (*[]BlogDTO, error)
+	SelectTopN(ctx context.Context, n int) (*[]BlogDTO, error)
+	SelectLastN(ctx context.Context, n int) (*[]BlogDTO, error)
 	GetIDBySlug(ctx context.Context, slug string) (int64, error)
-	GetBySlug(ctx context.Context, slug string) (*models.Blog, error)
+	GetBySlug(ctx context.Context, slug string) (*BlogDTO, error)
 }
 
 type blog struct {
@@ -34,14 +51,9 @@ func NewBlogRepo(db *gorm.DB, tracer trace.Tracer) Blog {
 	return &blog{db: db, tracer: tracer}
 }
 
-func (b *blog) SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]models.Blog, error) {
+func (b *blog) SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerPage, pageNumber int, categoryID int64) (*[]BlogDTO, error) {
 	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectAllByPaginationByCategorySlug")
 	defer span.End()
-
-	max := config.C.Basic.Pagination.MaximumBlogPerPage
-	if blogPerPage > max {
-		return nil, ErrMaximumPageSize
-	}
 
 	query := b.db.WithContext(spanCtx).Limit(blogPerPage).
 		Offset(pageNumber * blogPerPage).
@@ -50,8 +62,8 @@ func (b *blog) SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerP
 		query.Where("category_id = ?", categoryID)
 	}
 
-	var blogs []models.Blog
-	result := query.Find(&blogs)
+	var blogs []BlogDTO
+	result := query.Joins("Author").Find(&blogs)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -60,12 +72,13 @@ func (b *blog) SelectAllByPaginationByCategorySlug(ctx context.Context, blogPerP
 	return &blogs, nil
 }
 
-func (b *blog) SelectByCategoryID(ctx context.Context, categoryID int64) (*[]models.Blog, error) {
+func (b *blog) SelectByCategoryID(ctx context.Context, categoryID int64) (*[]BlogDTO, error) {
 	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectByCategoryID")
 	defer span.End()
 
-	var blogs []models.Blog
+	var blogs []BlogDTO
 	result := b.db.WithContext(spanCtx).Where("publish = true").
+		Joins("Author").
 		First(&blogs, "publish=true AND category_id = ?", categoryID)
 	if result.Error != nil {
 		return nil, result.Error
@@ -74,15 +87,16 @@ func (b *blog) SelectByCategoryID(ctx context.Context, categoryID int64) (*[]mod
 	return &blogs, nil
 }
 
-func (b *blog) SelectTopN(ctx context.Context, n int) (*[]models.Blog, error) {
+func (b *blog) SelectTopN(ctx context.Context, n int) (*[]BlogDTO, error) {
 	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectTopN")
 	defer span.End()
 
-	var blogs []models.Blog
+	var blogs []BlogDTO
 	lastDays := config.C.Basic.PopularPostsFromLastDays
-	past2days := time.Now().AddDate(0, 0, -1*lastDays)
+	pastNDays := time.Now().AddDate(0, 0, -1*lastDays)
 	result := b.db.WithContext(spanCtx).Limit(n).
-		Where("publish=true AND category_id != 1 AND created_at > ?", past2days).
+		Where("publish=true AND category_id != 1 AND created_at > ?", pastNDays).
+		Joins("Author").
 		Find(&blogs)
 
 	if result.Error != nil {
@@ -92,15 +106,16 @@ func (b *blog) SelectTopN(ctx context.Context, n int) (*[]models.Blog, error) {
 	return &blogs, nil
 }
 
-func (b *blog) SelectLastN(ctx context.Context, n int) (*[]models.Blog, error) {
+func (b *blog) SelectLastN(ctx context.Context, n int) (*[]BlogDTO, error) {
 	spanCtx, span := b.tracer.Start(ctx, "blog-repository: SelectLastN")
 	defer span.End()
 
-	var blogs []models.Blog
+	var blogs []BlogDTO
 	lastDays := config.C.Basic.PopularPostsFromLastDays
 	past2days := time.Now().AddDate(0, 0, -1*lastDays)
 	result := b.db.WithContext(spanCtx).Limit(n).
 		Where("publish=true AND category_id != 1 AND created_at > ? ORDER BY reading_time DESC", past2days).
+		Joins("Author").
 		Find(&blogs)
 	if result.Error != nil {
 		return nil, result.Error
@@ -114,7 +129,7 @@ func (b *blog) GetIDBySlug(ctx context.Context, slug string) (int64, error) {
 	defer span.End()
 
 	var ID int64
-	result := b.db.WithContext(spanCtx).Raw("SELECT id FROM blogs WHERE publish=true AND slug = ?", slug).Scan(&ID)
+	result := b.db.WithContext(spanCtx).Raw("^SELECT id FROM blogs WHERE publish=true AND slug = ?$", slug).Scan(&ID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
@@ -122,12 +137,12 @@ func (b *blog) GetIDBySlug(ctx context.Context, slug string) (int64, error) {
 	return ID, nil
 }
 
-func (b *blog) GetBySlug(ctx context.Context, slug string) (*models.Blog, error) {
+func (b *blog) GetBySlug(ctx context.Context, slug string) (*BlogDTO, error) {
 	spanCtx, span := b.tracer.Start(ctx, "blog-repository: GetBySlug")
 	defer span.End()
 
-	var blg models.Blog
-	result := b.db.WithContext(spanCtx).First(&blg, "publish=true AND slug = ?", slug)
+	var blg BlogDTO
+	result := b.db.WithContext(spanCtx).Where("publish=true AND slug = ?", slug).Joins("Author").First(&blg)
 	if result.Error != nil {
 		return nil, result.Error
 	}

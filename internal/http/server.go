@@ -50,7 +50,7 @@ func (s *server) Serve(app *app.Application) *server {
 	s.e.GET("/health", handlers.Health())
 	s.e.GET("/metrics", handlers.Metric())
 
-	categoryHandler := v1.NewCategoryHandler(app.Repositories, app.Tracer)
+	categoryHandler := v1.NewCategoryHandler(app.Services, app.Tracer)
 	categoryRoutes := s.e.Group("/api/v1/categories")
 	{
 		categoryRoutes.GET("", categoryHandler.All())
@@ -58,7 +58,7 @@ func (s *server) Serve(app *app.Application) *server {
 		categoryRoutes.GET("/top", categoryHandler.Top())
 	}
 
-	blogHandler := v1.NewBlogHandler(app.Repositories, app.Tracer)
+	blogHandler := v1.NewBlogHandler(app.Services, app.Tracer)
 	blogRoutes := s.e.Group("/api/v1/blogs")
 	{
 		blogRoutes.GET("", blogHandler.All()) // page , categorySlug

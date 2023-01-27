@@ -24,6 +24,7 @@ func serve(_ *cobra.Command, _ []string) {
 	application.WithTracer()
 	application.WithDB()
 	application.WithRepositories()
+	application.WithServices()
 
 	shutdownReady := internalHttp.
 		NewServer().

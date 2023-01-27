@@ -55,6 +55,7 @@ C:::::C               r:::::r               y:::::y:::::y       p:::::p     p:::
 type Application struct {
 	DB           *gorm.DB
 	Repositories *Repositories
+	Services     *Services
 	Tracer       trace.Tracer
 }
 

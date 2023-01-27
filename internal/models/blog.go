@@ -4,28 +4,21 @@ import (
 	"time"
 )
 
-type BlogInterface interface {
-}
-
 type Blog struct {
-	ID        uint `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	// DeletedAt sql.NullTime
-	Title          string  `gorm:"size:150"`
-	Slug           string  `gorm:"size:150; unique"`
-	AuthorID       int64   `gorm:"column:author_id; unique; foreignKey"`
-	ConversationID int64   `gorm:"column:conversation_id"`
-	Content        string  `gorm:""`
-	TextIndex      string  `gorm:""`
-	CategoryID     int64   `gorm:"column:category_id; unique; foreignKey; default:1"`
-	Image          *string `gorm:""`
-	ReadingTime    int     `gorm:""`
-	Publish        bool    `gorm:"default:false"`
-	LikesCount     uint64  `gorm:"default:0"`
-	DisLikesCount  uint64  `gorm:"default:0"`
+	ID             uint      `json:"id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	Title          string    `json:"title"`
+	Slug           string    `json:"slug"`
+	AuthorID       int64     `json:"author_id"`
+	Author         User      `json:"author"`
+	ConversationID int64     `json:"conversation_id"`
+	Content        string    `json:"content"`
+	TextIndex      string    `json:"text_index"`
+	CategoryID     int64     `json:"category_id"`
+	Image          *string   `json:"image"`
+	ReadingTime    int       `json:"reading_time"`
+	Publish        bool      `json:"publish"`
+	LikesCount     uint64    `json:"likes_count"`
+	DisLikesCount  uint64    `json:"dis_likes_count"`
 }
-
-// func NewBlog(title, slug, image string) CategoryInterfaceBlog {
-// 	return Blog{Title: title, Slug: slug, Image: image}
-// }
