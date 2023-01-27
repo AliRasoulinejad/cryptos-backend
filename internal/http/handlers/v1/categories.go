@@ -44,8 +44,7 @@ func (c category) All() echo.HandlerFunc {
 
 		categories, err := c.repositories.CategoryRepo.SelectAll(spanCtx)
 		if err != nil {
-
-			log.Logger.WithError(err).Errorf("error in get all categories")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get all categories")
 
 			return fmt.Errorf("error in get all categories")
 		}
@@ -68,7 +67,7 @@ func (c category) Get() echo.HandlerFunc {
 		slug := ctx.Param("slug")
 		cat, err := c.repositories.CategoryRepo.GetBySlug(spanCtx, slug)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get category by slug")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get category by slug")
 
 			return fmt.Errorf("error in get category by slug")
 		}
@@ -87,14 +86,14 @@ func (c category) Top() echo.HandlerFunc {
 
 		cnt, err := strconv.Atoi(ctx.Request().URL.Query().Get("count"))
 		if err != nil {
-			log.Logger.WithError(err).Error("count number is not integer")
+			log.Logger.WithContext(spanCtx).WithError(err).Error("count number is not integer")
 
 			return fmt.Errorf("count number is not integer")
 		}
 
 		categories, err := c.repositories.CategoryRepo.SelectTopN(spanCtx, cnt)
 		if err != nil {
-			log.Logger.WithError(err).Errorf("error in get top categories")
+			log.Logger.WithContext(spanCtx).WithError(err).Errorf("error in get top categories")
 
 			return fmt.Errorf("error in get top categories")
 		}
