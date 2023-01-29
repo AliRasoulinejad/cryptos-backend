@@ -6,19 +6,19 @@ import (
 
 type Blog struct {
 	ID             uint      `json:"id"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 	Title          string    `json:"title"`
 	Slug           string    `json:"slug"`
-	AuthorID       int64     `json:"author_id"`
+	AuthorID       int64     `json:"authorID"`
 	Author         User      `json:"author"`
-	ConversationID int64     `json:"conversation_id"`
+	ConversationID int64     `json:"conversationID"`
 	Content        string    `json:"content"`
-	TextIndex      string    `json:"text_index"`
-	CategoryID     int64     `json:"category_id"`
+	TextIndex      string    `json:"textIndex"`
+	CategoryID     int64     `json:"categoryID"`
 	Image          *string   `json:"image"`
-	ReadingTime    int       `json:"reading_time"`
+	ReadingTime    int       `json:"readingTime"`
 	Publish        bool      `json:"publish"`
-	LikesCount     uint64    `json:"likes_count"`
-	DisLikesCount  uint64    `json:"dis_likes_count"`
+	LikesCount     uint64    `json:"likesCount"`
+	DisLikesCount  uint64    `json:"disLikesCount"`
 }
