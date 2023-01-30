@@ -129,7 +129,7 @@ func (b *blog) GetIDBySlug(ctx context.Context, slug string) (int64, error) {
 	defer span.End()
 
 	var ID int64
-	result := b.db.WithContext(spanCtx).Raw("^SELECT id FROM blogs WHERE publish=true AND slug = ?$", slug).Scan(&ID)
+	result := b.db.WithContext(spanCtx).Raw(`SELECT id FROM blogs WHERE publish=true AND slug = ?`, slug).Scan(&ID)
 	if result.Error != nil {
 		return 0, result.Error
 	}
